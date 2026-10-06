@@ -143,5 +143,17 @@ export function useGallery(adapter: FolderAdapter, recursive: boolean) {
     }
   }, [restore]);
 
-  return { folder, items, phase, progress, restore, error, pick, reopen };
+  /** 最初の画面（フォルダ選択）に戻る。いま開いているフォルダは、ボタンからすぐ開き直せる */
+  const close = useCallback(() => {
+    if (!folder) return;
+    const current = folder;
+    setRestore({ status: 'needs-permission', folderName: current.name, request: async () => current });
+    setFolder(null);
+    setRefs([]);
+    setPhase('idle');
+    setProgress({ done: 0, total: 0 });
+    setError(null);
+  }, [folder]);
+
+  return { folder, items, phase, progress, restore, error, pick, reopen, close };
 }

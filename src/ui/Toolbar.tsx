@@ -4,7 +4,8 @@ import type { Phase } from './useGallery';
 
 interface Props {
   folderName: string | null;
-  onPick(): void;
+  /** 最初の画面（フォルダ選択）に戻る */
+  onHome(): void;
   mode: SortMode;
   onMode(m: SortMode): void;
   direction: SortDirection;
@@ -42,12 +43,12 @@ export function Toolbar(p: Props) {
   }
   return (
     <header className="toolbar">
-      <div className="brand">
+      <button type="button" className="brand brand-btn" onClick={p.onHome} aria-label="最初の画面に戻る（フォルダを選び直す）">
         <i aria-hidden="true" />
         Hueroom
-      </div>
-      <button type="button" className="folder-btn" onClick={p.onPick} title="フォルダを選び直す">
-        {p.folderName}
+      </button>
+      <button type="button" className="folder-btn" onClick={p.onHome} title="最初の画面に戻ってフォルダを選び直す">
+        <span aria-hidden="true">‹</span> {p.folderName}
       </button>
       <div className="spacer" />
 

@@ -23,7 +23,7 @@ export function App() {
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  const { folder, items, phase, progress, restore, error, pick, reopen } = useGallery(adapter, recursive);
+  const { folder, items, phase, progress, restore, error, pick, reopen, close: closeFolder } = useGallery(adapter, recursive);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   // お気に入り（IndexedDB）
@@ -79,7 +79,10 @@ export function App() {
     <div className="app" data-analysis={phase} data-count={items.length}>
       <Toolbar
         folderName={folder?.name ?? null}
-        onPick={pick}
+        onHome={() => {
+          setOpenKey(null);
+          closeFolder();
+        }}
         mode={mode}
         onMode={setMode}
         direction={direction}
