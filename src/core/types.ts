@@ -1,0 +1,41 @@
+/** 主要色。OKLab / OKLCH と sRGB の hex を併せ持つ */
+export interface DominantColor {
+  L: number;
+  a: number;
+  b: number;
+  /** 彩度（OKLCH の C） */
+  C: number;
+  /** 色相（OKLCH の H、0〜360 度） */
+  H: number;
+  hex: string;
+}
+
+/** 色抽出の結果（キャッシュ対象） */
+export interface Analysis {
+  color: DominantColor;
+  /** 約 200px の正方形サムネイル */
+  thumb: Blob;
+}
+
+/** 画像 1 枚の参照。プラットフォーム別アダプタが生成する */
+export interface ImageFileRef {
+  /** フォルダ内の相対パス（表示名にも使う） */
+  readonly path: string;
+  readonly name: string;
+  readonly lastModified: number;
+  readonly size: number;
+  /** 実体の読み込み（遅延）。Android/iOS では URI / bookmark 経由で実装する */
+  getFile(): Promise<Blob>;
+}
+
+/** ソート対象の最小構成 */
+export interface SortableItem {
+  key: string;
+  name: string;
+  lastModified: number;
+  /** 未解析なら undefined */
+  color?: Pick<DominantColor, 'L' | 'a' | 'b' | 'C' | 'H'>;
+}
+
+export type SortMode = 'color' | 'name' | 'date';
+export type SortDirection = 'asc' | 'desc';
