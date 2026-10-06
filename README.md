@@ -96,7 +96,12 @@ src/
 
 ### Web（公開 + PWA）
 
-**GitHub Pages への公開は設定済みです。** `.github/workflows/ci.yml` が、PR ではテストとビルドの確認を行い、`main` に変更が入るたびにテスト → ビルド → Pages へのデプロイまで実行します。初回だけ、リポジトリの Settings → Pages → **Build and deployment** の **Source** を **GitHub Actions** にしてください。公開 URL は `https://<ユーザー名>.github.io/Hueroom/` です。サブパス配信のため、ビルド時に `BASE_PATH=/Hueroom/` を渡しています（ローカルの `npm run dev` / `build` は `/` のままです）。
+**GitHub Pages への公開は設定済みです。** `.github/workflows/ci.yml` が `gh-pages` ブランチに公開します。
+
+- **本番**: `main` に変更が入るたびに、テスト → ビルド → ルート（`https://<ユーザー名>.github.io/Hueroom/`）を更新します。
+- **PR のプレビュー**: PR を作る・更新するたびに、`https://<ユーザー名>.github.io/Hueroom/pr-preview/pr-<番号>/` に公開し、PR にコメントで URL を貼ります。PR を閉じる（マージを含む）と自動で削除されます。マージ前に、動くものを実際に確認できます。
+- **初回だけの設定**: 最初のワークフローが `gh-pages` ブランチを作ったあとで、リポジトリの Settings → Pages → **Build and deployment** → **Source** を **Deploy from a branch**、ブランチを `gh-pages` / `/ (root)` にしてください。
+- サブパス配信のため、ビルド時に `BASE_PATH` を渡しています（ローカルの `npm run dev` / `build` は `/` のままです）。
 
 
 1. `public/manifest.webmanifest` は用意済みです（パスは相対指定なので、サブパスでも動きます）。PNG アイコン（192 / 512px、maskable）を追加します。
