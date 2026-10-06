@@ -8,8 +8,8 @@
   --line: #d9d9e0;
   --accent: #5b4bdb;
   --accent-fg: #ffffff;
-  --gold: #f0a81a;
-  --gold-ink: #5c3a00;
+  --gold: #ffea00;
+  --gold-ink: #3a3000;
   --danger: #d0344f;
   --scrim: rgba(12, 12, 18, 0.82);
   --font-ui: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', system-ui, sans-serif;
@@ -26,8 +26,8 @@
     --line: #2e2e38;
     --accent: #9b8cff;
     --accent-fg: #14141a;
-    --gold: #f5b92e;
-    --gold-ink: #3a2400;
+    --gold: #ffea00;
+    --gold-ink: #3a3000;
     --danger: #ff6b86;
     color-scheme: dark;
   }
@@ -41,8 +41,8 @@
   --line: #2e2e38;
   --accent: #9b8cff;
   --accent-fg: #14141a;
-  --gold: #f5b92e;
-  --gold-ink: #3a2400;
+  --gold: #ffea00;
+  --gold-ink: #3a3000;
   --danger: #ff6b86;
   color-scheme: dark;
 }
@@ -81,7 +81,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .btn.primary:hover { filter: brightness(1.08); }
 .btn svg, .fav-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
 .btn[aria-pressed='true'] svg { fill: currentColor; }
-.btn svg { color: var(--gold); }
+.btn svg { color: var(--gold); filter: drop-shadow(0 0 0.6px rgba(0, 0, 0, 0.7)); }
 .fav-filter[aria-pressed='true'] { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
 .fav-filter[aria-pressed='true'] svg { color: var(--gold-ink); }
 .fav-btn svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; }
@@ -114,7 +114,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   font-size: 10px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.6)); opacity: 0; transition: opacity 0.15s;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;
 }
-.fav-tag { position: absolute; top: 0; right: 0; width: 28px; height: 28px; pointer-events: none; fill: var(--gold); stroke: rgba(0, 0, 0, 0.3); stroke-width: 1; }
+.fav-tag { position: absolute; top: 0; right: 0; width: 28px; height: 28px; pointer-events: none; opacity: 0.7; fill: var(--gold); stroke: rgba(0, 0, 0, 0.3); stroke-width: 1; }
 .tile:hover .tile-name, .tile:focus-visible .tile-name { opacity: 1; }
 .empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; margin: 0; text-align: center; color: var(--muted); }
 
