@@ -46,6 +46,8 @@ export interface KV<V> {
   set(key: string, value: V): Promise<void>;
   delete(key: string): Promise<void>;
   keys(): Promise<string[]>;
+  /** 1 回のトランザクションでまとめて取得する（1 件ずつより大幅に速い） */
+  getMany(keys: readonly string[]): Promise<(V | undefined)[]>;
 }
 
 export function kv<V>(store: StoreName, dbName: string = DB_NAME): KV<V> {
@@ -53,6 +55,18 @@ export function kv<V>(store: StoreName, dbName: string = DB_NAME): KV<V> {
     get: (key) => run<V | undefined>(dbName, store, 'readonly', (s) => s.get(key)),
     set: (key, value) => run(dbName, store, 'readwrite', (s) => s.put(value, key)).then(() => undefined),
     delete: (key) => run(dbName, store, 'readwrite', (s) => s.delete(key)).then(() => undefined),
+    getMany: (keys) =>
+      openDb(dbName).then(
+        (db) =>
+          new Promise<(V | undefined)[]>((resolve, reject) => {
+            const tx = db.transaction(store, 'readonly');
+            const os = tx.objectStore(store);
+            const reqs = keys.map((k) => os.get(k) as IDBRequest<V | undefined>);
+            tx.oncomplete = () => resolve(reqs.map((r) => r.result));
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error);
+          }),
+      ),
     keys: () => run<IDBValidKey[]>(dbName, store, 'readonly', (s) => s.getAllKeys()).then((k) => k.map(String)),
   };
 }

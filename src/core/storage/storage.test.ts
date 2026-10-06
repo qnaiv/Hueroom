@@ -23,6 +23,8 @@ describe('analysisCache', () => {
     const got = await cache.get('k');
     expect(got?.color).toEqual(value.color);
     expect(got?.thumb.size).toBe(1);
+    const many = await cache.getMany(['k', 'nope', 'k']);
+    expect(many.map((x) => x?.color.hex)).toEqual(['#aa5533', undefined, '#aa5533']);
   });
 });
 

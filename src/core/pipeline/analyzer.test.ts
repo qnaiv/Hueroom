@@ -23,7 +23,7 @@ const ref = (name: string, fail = false): ImageFileRef => ({
 
 function memoryCache(initial: Record<string, Analysis> = {}): AnalysisCache & { map: Map<string, Analysis> } {
   const map = new Map(Object.entries(initial));
-  return { map, get: async (k) => map.get(k), set: async (k, v) => void map.set(k, v) };
+  return { map, get: async (k) => map.get(k), getMany: async (ks) => ks.map((k) => map.get(k)), set: async (k, v) => void map.set(k, v) };
 }
 
 function fakeExtractor(concurrency = 2) {

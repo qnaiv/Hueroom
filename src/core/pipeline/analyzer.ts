@@ -30,16 +30,13 @@ export async function analyzeImages(
 
   // 1. キャッシュの確認（一定数ずつ並行）
   const misses: { ref: ImageFileRef; key: string }[] = [];
-  const LOOKUP_BATCH = 32;
+  const LOOKUP_BATCH = 128;
   for (let i = 0; i < refs.length; i += LOOKUP_BATCH) {
     if (signal?.aborted) return;
     const chunk = refs.slice(i, i + LOOKUP_BATCH);
-    const hits = await Promise.all(
-      chunk.map(async (ref) => {
-        const key = imageKey(ref);
-        return { ref, key, hit: await deps.cache.get(key).catch(() => undefined) };
-      }),
-    );
+    const keys = chunk.map(imageKey);
+    const found = await deps.cache.getMany(keys).catch(() => keys.map(() => undefined));
+    const hits = chunk.map((ref, n) => ({ ref, key: keys[n] as string, hit: found[n] }));
     for (const { ref, key, hit } of hits) {
       if (hit) finish(ref, key, hit);
       else misses.push({ ref, key });
