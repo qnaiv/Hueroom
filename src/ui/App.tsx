@@ -4,7 +4,7 @@ import { snakeCells } from '../core/layout/snake';
 import { sortItems } from '../core/sort';
 import type { SortDirection, SortMode } from '../core/types';
 import { createWebAdapter } from '../platform/web';
-import { ColorBar } from './ColorBar';
+import { NavBar } from './NavBar';
 import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
 import { VirtualGrid } from './VirtualGrid';
@@ -16,7 +16,7 @@ const favoritesStore = new FavoritesStore();
 
 export function App() {
   const [mode, setMode] = useState<SortMode>('color');
-  const [direction, setDirection] = useState<SortDirection>('asc');
+  const [direction, setDirection] = useState<SortDirection>('desc');
   const [recursive, setRecursive] = useState(true);
   const [tileSize, setTileSize] = useState(128);
   const [cols, setCols] = useState(6);
@@ -104,6 +104,7 @@ export function App() {
               cols={cols}
               tileTarget={tileSize}
               onColsChange={setCols}
+              favorites={favorites}
               onOpen={open}
               scrollerRef={scrollerRef}
             />
@@ -115,7 +116,7 @@ export function App() {
               </p>
             )}
           </div>
-          <ColorBar cells={cells} cols={cols} favorites={favorites} scrollerRef={scrollerRef} />
+          <NavBar variant={mode} cells={cells} cols={cols} favorites={favorites} scrollerRef={scrollerRef} />
         </div>
       ) : (
         <Welcome onPick={pick} onReopen={reopen} restore={restore} persistent={adapter.capabilities.persistent} error={error} />

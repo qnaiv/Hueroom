@@ -1,3 +1,4 @@
+import { EXIF_HEAD_BYTES, readExifDate } from '../exif';
 import type { Analysis } from '../types';
 import { dominantFromRgba } from './quantize';
 
@@ -67,7 +68,14 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     let blobOut = await thumb.toBlob('image/webp', 0.8);
     // webp を書き出せない環境（Safari など）では jpeg にする
     if (blobOut.type !== 'image/webp') blobOut = await thumb.toBlob('image/jpeg', 0.8);
-    return { color, thumb: blobOut };
+    // 撮影日時は、JPEG の先頭だけを読んで取り出す
+    let shotAt: number | undefined;
+    try {
+      shotAt = readExifDate(await blob.slice(0, EXIF_HEAD_BYTES).arrayBuffer());
+    } catch {
+      shotAt = undefined;
+    }
+    return { color, thumb: blobOut, shotAt };
   } finally {
     bitmap.close();
   }

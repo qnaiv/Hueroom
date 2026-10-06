@@ -1,5 +1,5 @@
 import type { SortDirection, SortMode } from '../core/types';
-import { HEART } from './Lightbox';
+import { STAR } from './icons';
 import type { Phase } from './useGallery';
 
 interface Props {
@@ -24,8 +24,7 @@ interface Props {
 
 const MODES: [SortMode, string][] = [
   ['color', '色'],
-  ['name', '名前'],
-  ['date', '更新日時'],
+  ['date', '日付'],
 ];
 
 export function Toolbar(p: Props) {
@@ -64,9 +63,9 @@ export function Toolbar(p: Props) {
           type="button"
           className="btn"
           onClick={() => p.onDirection(p.direction === 'asc' ? 'desc' : 'asc')}
-          aria-label={p.direction === 'asc' ? '昇順（押すと降順）' : '降順（押すと昇順）'}
+          aria-label={p.direction === 'asc' ? '古い順（押すと新しい順）' : '新しい順（押すと古い順）'}
         >
-          {p.direction === 'asc' ? '昇順 ↑' : '降順 ↓'}
+          {p.direction === 'asc' ? '古い順 ↑' : '新しい順 ↓'}
         </button>
       )}
 
@@ -76,7 +75,7 @@ export function Toolbar(p: Props) {
         aria-pressed={p.onlyFavorites}
         onClick={() => p.onOnlyFavorites(!p.onlyFavorites)}
       >
-        {HEART}
+        {STAR}
         お気に入り <span className="num">{p.favoriteCount}</span>
       </button>
 

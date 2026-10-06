@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { STAR } from './icons';
 import type { GalleryItem } from './types';
 
 interface Props {
@@ -11,12 +12,11 @@ interface Props {
   onClose(): void;
 }
 
-const HEART = (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 21s-7.5-4.6-9.6-9.3C1 8.5 2.9 5 6.2 5c2 0 3.5 1.1 4.3 2.4h3C14.3 6.1 15.8 5 17.8 5c3.3 0 5.2 3.5 3.8 6.7C19.5 16.4 12 21 12 21z" />
-  </svg>
-);
-
+const pad = (n: number) => String(n).padStart(2, '0');
+const formatDateTime = (t: number) => {
+  const d = new Date(t);
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 const formatBytes = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 /** 拡大表示。ここでお気に入りの登録・解除ができる */
@@ -104,7 +104,9 @@ export function Lightbox({ item, index, count, isFavorite, onToggleFavorite, onM
             <span>{item.ref.path}</span>
             {size && <span>{size.w}×{size.h}px</span>}
             <span>{formatBytes(item.ref.size)}</span>
-            <span>{new Date(item.lastModified).toLocaleDateString('ja-JP')}</span>
+            <span>
+              {item.shotFromExif ? '撮影' : '更新'} {formatDateTime(item.shotAt)}
+            </span>
           </div>
           <div className="lb-actions">
             <button
@@ -114,7 +116,7 @@ export function Lightbox({ item, index, count, isFavorite, onToggleFavorite, onM
               onClick={onToggleFavorite}
               title="お気に入り（F キー）"
             >
-              {HEART}
+              {STAR}
               {isFavorite ? 'お気に入り済み' : 'お気に入りに追加'}
             </button>
             <button type="button" className="btn" ref={closeRef} onClick={onClose}>
@@ -140,4 +142,3 @@ function useThumb(item: GalleryItem): string | undefined {
   return url;
 }
 
-export { HEART };

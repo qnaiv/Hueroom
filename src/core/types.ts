@@ -15,6 +15,8 @@ export interface Analysis {
   color: DominantColor;
   /** 約 200px の正方形サムネイル */
   thumb: Blob;
+  /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */
+  shotAt?: number;
 }
 
 /** 画像 1 枚の参照。プラットフォーム別アダプタが生成する */
@@ -33,9 +35,11 @@ export interface SortableItem {
   key: string;
   name: string;
   lastModified: number;
+  /** 日付順に使う時刻。撮影日時、なければ更新日時 */
+  shotAt: number;
   /** 未解析なら undefined */
   color?: Pick<DominantColor, 'L' | 'a' | 'b' | 'C' | 'H'>;
 }
 
-export type SortMode = 'color' | 'name' | 'date';
+export type SortMode = 'color' | 'date';
 export type SortDirection = 'asc' | 'desc';

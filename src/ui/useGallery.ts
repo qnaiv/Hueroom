@@ -109,6 +109,8 @@ export function useGallery(adapter: FolderAdapter, recursive: boolean) {
           ref,
           name: ref.name,
           lastModified: ref.lastModified,
+          shotAt: a?.shotAt ?? ref.lastModified,
+          shotFromExif: a?.shotAt !== undefined,
           analysis: a ?? undefined,
           color: a?.color,
           failed: a === null,

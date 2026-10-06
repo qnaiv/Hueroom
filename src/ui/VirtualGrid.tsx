@@ -28,11 +28,12 @@ interface TileProps {
   size: number;
   x: number;
   y: number;
+  favorite: boolean;
   onOpen(item: GalleryItem): void;
 }
 
 const Tile = memo(
-  function Tile({ item, size, x, y, onOpen }: TileProps) {
+  function Tile({ item, size, x, y, favorite, onOpen }: TileProps) {
     const url = useObjectUrl(item.analysis?.thumb);
     return (
       <button
@@ -46,7 +47,7 @@ const Tile = memo(
           background: item.analysis?.color.hex,
         }}
         onClick={() => onOpen(item)}
-        aria-label={`${item.name} を拡大`}
+        aria-label={`${item.name}${favorite ? '（お気に入り）' : ''} を拡大`}
         title={item.failed ? `${item.name}（読み込めませんでした）` : item.name}
       >
         {url && (
@@ -59,6 +60,12 @@ const Tile = memo(
           />
         )}
         <span className="tile-name">{item.name}</span>
+        {/* お気に入り済みの画像は、右上の角を金色の三角で塗る（表示のみ。登録・解除は拡大表示で行う） */}
+        {favorite && (
+          <svg className="fav-tag" viewBox="0 0 28 28" aria-hidden="true">
+            <path d="M0 0H28V28Z" />
+          </svg>
+        )}
       </button>
     );
   },
@@ -66,6 +73,7 @@ const Tile = memo(
     a.item.key === b.item.key &&
     a.item.analysis === b.item.analysis &&
     a.item.failed === b.item.failed &&
+    a.favorite === b.favorite &&
     a.size === b.size &&
     a.x === b.x &&
     a.y === b.y,
@@ -77,12 +85,13 @@ interface Props {
   cols: number;
   tileTarget: number;
   onColsChange(cols: number): void;
+  favorites: ReadonlySet<string>;
   onOpen(item: GalleryItem): void;
   scrollerRef: RefObject<HTMLDivElement | null>;
 }
 
 /** 表示範囲の行だけを描画する仮想スクロールのグリッド */
-export function VirtualGrid({ cells, cols, tileTarget, onColsChange, onOpen, scrollerRef }: Props) {
+export function VirtualGrid({ cells, cols, tileTarget, onColsChange, favorites, onOpen, scrollerRef }: Props) {
   const { width, height } = useElementSize(scrollerRef);
   const [scrollTop, setScrollTop] = useState(0);
   const raf = useRef(0);
@@ -123,7 +132,7 @@ export function VirtualGrid({ cells, cols, tileTarget, onColsChange, onOpen, scr
       const item = cells[r * cols + c];
       if (!item) continue;
       tiles.push(
-        <Tile key={item.key} item={item} size={size} x={GRID_PAD + c * rowH} y={GRID_PAD + r * rowH} onOpen={onOpen} />,
+        <Tile key={item.key} item={item} size={size} x={GRID_PAD + c * rowH} y={GRID_PAD + r * rowH} favorite={favorites.has(item.key)} onOpen={onOpen} />,
       );
     }
   }

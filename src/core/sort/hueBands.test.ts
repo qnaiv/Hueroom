@@ -4,7 +4,7 @@ import type { SortableItem } from '../types';
 import { hueBandIndex, sortByColor, totalStepDistance } from './hueBands';
 
 function item(key: string, L: number, C: number, H: number): SortableItem {
-  return { key, name: key, lastModified: 0, color: { ...oklchToOklab(L, C, H), C, H } };
+  return { key, name: key, lastModified: 0, shotAt: 0, color: { ...oklchToOklab(L, C, H), C, H } };
 }
 
 /** 決定的な疑似乱数 */
@@ -52,7 +52,7 @@ describe('sortByColor', () => {
   });
 
   it('未解析の画像は最後に置く', () => {
-    const pending: SortableItem = { key: 'p', name: 'p', lastModified: 0 };
+    const pending: SortableItem = { key: 'p', name: 'p', lastModified: 0, shotAt: 0 };
     const out = sortByColor([pending, ...sample(20)]);
     expect(out[out.length - 1]).toBe(pending);
   });

@@ -6,4 +6,6 @@ export interface GalleryItem extends SortableItem {
   analysis?: Analysis;
   /** 解析（デコード）に失敗した画像 */
   failed: boolean;
+  /** shotAt が EXIF の撮影日時なら true（false なら更新日時で代用している） */
+  shotFromExif: boolean;
 }

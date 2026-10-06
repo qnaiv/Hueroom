@@ -28,6 +28,19 @@ describe('analysisCache', () => {
   });
 });
 
+describe('analysisCache の版', () => {
+  it('古い版（撮影日時の導入前）の保存データは、無かったものとして扱う', async () => {
+    const { kv } = await import('./idb');
+    await kv<unknown>('analysis', 't-ver').set('old', { color: { hex: '#000000' }, thumb: new Blob(['x']) });
+    const cache = createAnalysisCache('t-ver');
+    expect(await cache.get('old')).toBeUndefined();
+    expect(await cache.getMany(['old'])).toEqual([undefined]);
+    // 新しく保存すると、撮影日時つきで読める
+    await cache.set('old', { color: { L: 0, a: 0, b: 0, C: 0, H: 0, hex: '#000000' }, thumb: new Blob(['y']), shotAt: 123 });
+    expect((await cache.get('old'))?.shotAt).toBe(123);
+  });
+});
+
 describe('FavoritesStore', () => {
   it('切り替えが保存され、読み直しても残る', async () => {
     const a = new FavoritesStore('t-fav');
