@@ -7,6 +7,8 @@ interface Props {
   index: number;
   count: number;
   isFavorite: boolean;
+  /** 解析が終わっていない画像は、まだお気に入りにできない */
+  canFavorite: boolean;
   onToggleFavorite(): void;
   onMove(delta: number): void;
   onClose(): void;
@@ -20,7 +22,7 @@ const formatDateTime = (t: number) => {
 const formatBytes = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 /** 拡大表示。ここでお気に入りの登録・解除ができる */
-export function Lightbox({ item, index, count, isFavorite, onToggleFavorite, onMove, onClose }: Props) {
+export function Lightbox({ item, index, count, isFavorite, canFavorite, onToggleFavorite, onMove, onClose }: Props) {
   const [src, setSrc] = useState<string>();
   const [size, setSize] = useState<{ w: number; h: number }>();
   const [loaded, setLoaded] = useState(false);
@@ -114,7 +116,8 @@ export function Lightbox({ item, index, count, isFavorite, onToggleFavorite, onM
               className="btn fav-btn"
               aria-pressed={isFavorite}
               onClick={onToggleFavorite}
-              title="お気に入り（F キー）"
+              disabled={!canFavorite}
+              title={canFavorite ? 'お気に入り（F キー）' : '解析が終わると、お気に入りにできます'}
             >
               {STAR}
               {isFavorite ? 'お気に入り済み' : 'お気に入りに追加'}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AnalysisCache } from '../cache/analysisCache';
-import { imageKey } from '../keys';
+import { cacheKey } from '../keys';
 import type { Analysis, ImageFileRef } from '../types';
 import { analyzeImages } from './analyzer';
 import type { Extractor } from './extractor';
@@ -48,7 +48,7 @@ function fakeExtractor(concurrency = 2) {
 describe('analyzeImages', () => {
   it('キャッシュにあるものは再計算せず、無いものだけ解析して保存する', async () => {
     const refs = [ref('a.jpg'), ref('b.jpg'), ref('c.jpg')];
-    const cache = memoryCache({ [imageKey(refs[0]!)]: analysis('#aaaaaa') });
+    const cache = memoryCache({ [cacheKey(refs[0]!)]: analysis('#aaaaaa') });
     const { extractor, calls } = fakeExtractor();
     const got = new Map<string, Analysis | null>();
     await analyzeImages(refs, { cache, extractor }, { onResult: (r, _k, a) => void got.set(r.name, a) });
@@ -56,6 +56,17 @@ describe('analyzeImages', () => {
     expect(got.get('a.jpg')?.color.hex).toBe('#aaaaaa');
     expect(got.get('b.jpg')?.color.hex).toBe('#123456');
     expect(cache.map.size).toBe(3);
+  });
+
+  it('別の階層（パスが違う）でも、名前・サイズ・更新日時が同じならキャッシュを使う', async () => {
+    const before = { ...ref('IMG_1.jpg'), path: 'trip/IMG_1.jpg' };
+    const after = { ...ref('IMG_1.jpg'), path: 'photos/trip/IMG_1.jpg' }; // 上の階層を選び直した
+    const cache = memoryCache({ [cacheKey(before)]: analysis('#abcdef') });
+    const { extractor, calls } = fakeExtractor();
+    const got: (Analysis | null)[] = [];
+    await analyzeImages([after], { cache, extractor }, { onResult: (_r, _k, a) => void got.push(a) });
+    expect(calls).toEqual([]);
+    expect(got[0]?.color.hex).toBe('#abcdef');
   });
 
   it('同時実行数が Extractor の並列度を超えない', async () => {

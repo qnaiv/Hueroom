@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createAnalysisCache } from '../core/cache/analysisCache';
 import { diffKeys, refreshNotice } from '../core/diff';
-import { imageKey } from '../core/keys';
+import { favoriteId, imageKey } from '../core/keys';
 import { analyzeImages } from '../core/pipeline/analyzer';
 import { createExtractor, type Extractor } from '../core/pipeline/extractor';
 import type { Analysis, ImageFileRef } from '../core/types';
@@ -140,6 +140,7 @@ export function useGallery(adapter: FolderAdapter, recursive: boolean) {
           lastModified: ref.lastModified,
           shotAt: a?.shotAt ?? ref.lastModified,
           shotFromExif: a?.shotAt !== undefined,
+          favoriteId: a ? favoriteId(ref, a.hash) : undefined,
           analysis: a ?? undefined,
           color: a?.color,
           failed: a === null,

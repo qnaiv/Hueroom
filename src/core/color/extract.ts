@@ -1,4 +1,5 @@
 import { EXIF_HEAD_BYTES, readExifDate } from '../exif';
+import { sha256Hex } from '../hash';
 import type { Analysis } from '../types';
 import { dominantFromRgba } from './quantize';
 
@@ -75,7 +76,14 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     } catch {
       shotAt = undefined;
     }
-    return { color, thumb: blobOut, shotAt };
+    // 中身のハッシュ（お気に入りの識別子）。crypto.subtle が使えない環境では undefined
+    let hash: string | undefined;
+    try {
+      hash = await sha256Hex(await blob.arrayBuffer());
+    } catch {
+      hash = undefined;
+    }
+    return { color, thumb: blobOut, shotAt, hash };
   } finally {
     bitmap.close();
   }

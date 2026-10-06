@@ -9,6 +9,7 @@ import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
 import { VirtualGrid } from './VirtualGrid';
 import { Welcome } from './Welcome';
+import { isFavorite } from './types';
 import { useGallery } from './useGallery';
 
 const adapter = createWebAdapter();
@@ -50,7 +51,7 @@ export function App() {
 
   const sorted = useMemo(() => sortItems(items, mode, direction), [items, mode, direction]);
   const displayed = useMemo(
-    () => (onlyFavorites ? sorted.filter((x) => filterFavorites.has(x.key)) : sorted),
+    () => (onlyFavorites ? sorted.filter((x) => isFavorite(x, filterFavorites)) : sorted),
     [sorted, onlyFavorites, filterFavorites],
   );
   // 色順は蛇行配置、それ以外は通常の行優先
@@ -73,7 +74,7 @@ export function App() {
   const open = useCallback((item: { key: string }) => setOpenKey(item.key), []);
   const close = useCallback(() => setOpenKey(null), []);
 
-  const favCountInFolder = useMemo(() => items.reduce((n, x) => n + (favorites.has(x.key) ? 1 : 0), 0), [items, favorites]);
+  const favCountInFolder = useMemo(() => items.reduce((n, x) => n + (isFavorite(x, favorites) ? 1 : 0), 0), [items, favorites]);
 
   return (
     <div className="app" data-analysis={phase} data-count={items.length}>
@@ -132,8 +133,9 @@ export function App() {
           item={openItem}
           index={openIndex}
           count={displayed.length}
-          isFavorite={favorites.has(openItem.key)}
-          onToggleFavorite={() => toggleFavorite(openItem.key)}
+          isFavorite={isFavorite(openItem, favorites)}
+          canFavorite={openItem.favoriteId !== undefined}
+          onToggleFavorite={() => openItem.favoriteId !== undefined && toggleFavorite(openItem.favoriteId)}
           onMove={move}
           onClose={close}
         />

@@ -1,5 +1,5 @@
 import type { AnalysisCache } from '../cache/analysisCache';
-import { imageKey } from '../keys';
+import { cacheKey, imageKey } from '../keys';
 import type { Analysis, ImageFileRef } from '../types';
 import type { Extractor } from './extractor';
 
@@ -34,9 +34,9 @@ export async function analyzeImages(
   for (let i = 0; i < refs.length; i += LOOKUP_BATCH) {
     if (signal?.aborted) return;
     const chunk = refs.slice(i, i + LOOKUP_BATCH);
-    const keys = chunk.map(imageKey);
-    const found = await deps.cache.getMany(keys).catch(() => keys.map(() => undefined));
-    const hits = chunk.map((ref, n) => ({ ref, key: keys[n] as string, hit: found[n] }));
+    const cacheKeys = chunk.map(cacheKey);
+    const found = await deps.cache.getMany(cacheKeys).catch(() => cacheKeys.map(() => undefined));
+    const hits = chunk.map((ref, n) => ({ ref, key: imageKey(ref), hit: found[n] }));
     for (const { ref, key, hit } of hits) {
       if (hit) finish(ref, key, hit);
       else misses.push({ ref, key });
@@ -56,7 +56,7 @@ export async function analyzeImages(
         result = null; // 読み込めないファイルは飛ばして続ける
       }
       if (signal?.aborted) return;
-      if (result) await deps.cache.set(job.key, result).catch(() => undefined);
+      if (result) await deps.cache.set(cacheKey(job.ref), result).catch(() => undefined);
       finish(job.ref, job.key, result);
     }
   };

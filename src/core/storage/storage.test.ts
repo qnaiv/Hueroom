@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
 import { createAnalysisCache } from '../cache/analysisCache';
 import { FavoritesStore } from '../cache/favorites';
-import { imageKey } from '../keys';
+import { cacheKey, favoriteId, imageKey } from '../keys';
 
 describe('imageKey', () => {
   it('パス・更新日時・サイズが違えば別のキーになる', () => {
@@ -11,6 +11,22 @@ describe('imageKey', () => {
     expect(imageKey(base)).not.toBe(imageKey({ ...base, path: 'c/b.jpg' }));
     expect(imageKey(base)).not.toBe(imageKey({ ...base, lastModified: 2 }));
     expect(imageKey(base)).not.toBe(imageKey({ ...base, size: 11 }));
+  });
+});
+
+describe('cacheKey / favoriteId', () => {
+  const base = { name: 'a.jpg', lastModified: 1, size: 10 };
+  it('cacheKey はパスを含まない（階層が変わっても同じ）', () => {
+    expect(cacheKey(base)).toBe(cacheKey({ ...base }));
+    expect(cacheKey({ ...base, name: 'b.jpg' })).not.toBe(cacheKey(base));
+    expect(cacheKey({ ...base, size: 11 })).not.toBe(cacheKey(base));
+    expect(cacheKey({ ...base, lastModified: 2 })).not.toBe(cacheKey(base));
+  });
+  it('お気に入りの識別子は、ハッシュがあればハッシュ、無ければ cacheKey で代用する', () => {
+    expect(favoriteId(base, 'abc123')).toBe('abc123');
+    expect(favoriteId(base, undefined)).toBe(`q:${cacheKey(base)}`);
+    // 名前や更新日時が変わっても、中身（ハッシュ）が同じなら同じ識別子
+    expect(favoriteId({ ...base, name: 'moved.jpg', lastModified: 99 }, 'abc123')).toBe('abc123');
   });
 });
 

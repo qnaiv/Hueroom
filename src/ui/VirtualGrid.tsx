@@ -1,6 +1,6 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useElementSize } from './useElementSize';
-import type { GalleryItem } from './types';
+import { isFavorite, type GalleryItem } from './types';
 
 export const GRID_GAP = 4;
 export const GRID_PAD = 8;
@@ -132,7 +132,7 @@ export function VirtualGrid({ cells, cols, tileTarget, onColsChange, favorites, 
       const item = cells[r * cols + c];
       if (!item) continue;
       tiles.push(
-        <Tile key={item.key} item={item} size={size} x={GRID_PAD + c * rowH} y={GRID_PAD + r * rowH} favorite={favorites.has(item.key)} onOpen={onOpen} />,
+        <Tile key={item.key} item={item} size={size} x={GRID_PAD + c * rowH} y={GRID_PAD + r * rowH} favorite={isFavorite(item, favorites)} onOpen={onOpen} />,
       );
     }
   }

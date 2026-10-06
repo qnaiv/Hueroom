@@ -17,6 +17,8 @@ export interface Analysis {
   thumb: Blob;
   /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */
   shotAt?: number;
+  /** 画像の中身の SHA-256（16 進）。お気に入りの識別子に使う。計算できなければ undefined */
+  hash?: string;
 }
 
 /** 画像 1 枚の参照。プラットフォーム別アダプタが生成する */

@@ -5,11 +5,11 @@ import type { Analysis } from '../types';
  * 解析結果の形式の版。Analysis に項目を足したとき（例: 撮影日時）に上げる。
  * 古い版の保存データは無かったものとして扱い、再解析して上書きする。
  */
-export const ANALYSIS_VERSION = 2;
+export const ANALYSIS_VERSION = 3;
 
 type Stored = Analysis & { version: number };
 
-/** 主要色とサムネイルのキャッシュ。キーは imageKey()（パス＋更新日時＋サイズ） */
+/** 主要色・サムネイル・撮影日時・ハッシュのキャッシュ。キーは cacheKey()（名前＋サイズ＋更新日時。パスは含めない） */
 export interface AnalysisCache {
   get(key: string): Promise<Analysis | undefined>;
   getMany(keys: readonly string[]): Promise<(Analysis | undefined)[]>;

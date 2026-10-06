@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { oklabToSrgb, rgbToHex } from '../core/color/oklab';
-import type { GalleryItem } from './types';
+import { isFavorite, type GalleryItem } from './types';
 
 export const NAV_BAR_WIDTH = { color: 30, date: 68 } as const;
 /** 年・月のラベルが重ならないための最小の間隔（px） */
@@ -38,7 +38,7 @@ function rowInfos(cells: (GalleryItem | null)[], cols: number, favorites: Readon
       const item = cells[r * cols + c];
       if (!item) continue;
       shotAt ??= item.shotAt;
-      if (favorites.has(item.key)) fav = true;
+      if (isFavorite(item, favorites)) fav = true;
       if (item.color) {
         L += item.color.L;
         a += item.color.a;
