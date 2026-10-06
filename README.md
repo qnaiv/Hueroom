@@ -96,9 +96,12 @@ src/
 
 ### Web（公開 + PWA）
 
-1. `public/manifest.webmanifest` は用意済みです。PNG アイコン（192 / 512px、maskable）を追加します。
+**GitHub Pages への公開は設定済みです。** `.github/workflows/ci.yml` が、PR ではテストとビルドの確認を行い、`main` に変更が入るたびにテスト → ビルド → Pages へのデプロイまで実行します。初回だけ、リポジトリの Settings → Pages → **Build and deployment** の **Source** を **GitHub Actions** にしてください。公開 URL は `https://<ユーザー名>.github.io/Hueroom/` です。サブパス配信のため、ビルド時に `BASE_PATH=/Hueroom/` を渡しています（ローカルの `npm run dev` / `build` は `/` のままです）。
+
+
+1. `public/manifest.webmanifest` は用意済みです（パスは相対指定なので、サブパスでも動きます）。PNG アイコン（192 / 512px、maskable）を追加します。
 2. `vite-plugin-pwa` を入れて Service Worker を生成し、アプリ本体をオフラインでも開けるようにします。
-3. 静的ホスティング（Cloudflare Pages / GitHub Pages など）に `dist/` を置きます。HTTPS が必要です。
+3. 他のホスティング（Cloudflare Pages など）を使う場合は `dist/` を置きます。HTTPS が必要です。
 4. Google Fonts を外部から読んでいます。オフライン対応時はフォントを同梱してください。
 
 ### Android（Capacitor）
