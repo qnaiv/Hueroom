@@ -23,7 +23,7 @@ export function App() {
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  const { folder, items, phase, progress, restore, error, pick, reopen, close: closeFolder } = useGallery(adapter, recursive);
+  const { folder, items, phase, progress, restore, error, notice, pick, reopen, close: closeFolder, refresh } = useGallery(adapter, recursive);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   // お気に入り（IndexedDB）
@@ -59,7 +59,7 @@ export function App() {
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites, folder]);
+  }, [mode, direction, onlyFavorites]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -98,6 +98,9 @@ export function App() {
         total={items.length}
         phase={phase}
         progress={progress}
+        notice={notice}
+        onRefresh={refresh}
+        refreshReopensPicker={!adapter.capabilities.persistent}
       />
       {folder ? (
         <div className="main">

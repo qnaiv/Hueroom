@@ -81,7 +81,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .btn.primary:hover { filter: brightness(1.08); }
 .btn svg, .fav-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
 .btn[aria-pressed='true'] svg { fill: currentColor; }
-.btn svg { color: var(--gold); filter: drop-shadow(0 0 0.6px rgba(0, 0, 0, 0.7)); }
+.fav-filter svg { color: var(--gold); filter: drop-shadow(0 0 0.6px rgba(0, 0, 0, 0.7)); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:disabled:hover { background: transparent; }
 .fav-filter[aria-pressed='true'] { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
 .fav-filter[aria-pressed='true'] svg { color: var(--gold-ink); }
 .fav-btn svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; }
@@ -95,6 +97,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .zoom input { width: 90px; accent-color: var(--accent); }
 .check input { accent-color: var(--accent); }
 .status { font-size: 12px; color: var(--muted); min-width: 92px; text-align: right; }
+.notice { color: var(--fg); font-weight: 700; }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: transparent; }
 .progress div { height: 100%; background: var(--accent); transition: width 0.3s; }
 
@@ -114,7 +117,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   font-size: 10px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.6)); opacity: 0; transition: opacity 0.15s;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;
 }
-.fav-tag { position: absolute; top: 0; right: 0; width: 28px; height: 28px; pointer-events: none; opacity: 0.7; fill: var(--gold); stroke: rgba(0, 0, 0, 0.3); stroke-width: 1; }
+.fav-tag { position: absolute; top: 0; right: 0; width: 28px; height: 28px; pointer-events: none; opacity: 0.9; fill: #fff; stroke: rgba(0, 0, 0, 0.55); stroke-width: 1.5; }
 .tile:hover .tile-name, .tile:focus-visible .tile-name { opacity: 1; }
 .empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; margin: 0; text-align: center; color: var(--muted); }
 
@@ -133,7 +136,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .tick-year { width: 28px; flex: none; }
 .tick-month { width: 24px; flex: none; text-align: right; white-space: nowrap; color: var(--muted); font-weight: 400; }
 .fav-marks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 5px; }
-.fav-mark { position: absolute; right: 0; width: 10px; height: 10px; fill: var(--gold); stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; paint-order: stroke; filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6)); }
+.fav-mark { position: absolute; right: 0; width: 10px; height: 10px; fill: #fff; stroke: rgba(0, 0, 0, 0.6); stroke-width: 1; stroke-linejoin: round; }
 .navbar-view {
   position: absolute; left: 0; right: 0; top: 0; border: 2px solid #fff; border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.3); pointer-events: none;

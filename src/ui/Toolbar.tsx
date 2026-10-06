@@ -21,6 +21,12 @@ interface Props {
   total: number;
   phase: Phase;
   progress: { done: number; total: number };
+  /** 更新の結果（数秒だけ出す） */
+  notice: string | null;
+  /** フォルダを読み直して、新しい画像を追加する */
+  onRefresh(): void;
+  /** true のとき、更新はフォルダの選択をもう一度開く（フォルダを覚えられないブラウザ） */
+  refreshReopensPicker: boolean;
 }
 
 const MODES: [SortMode, string][] = [
@@ -97,7 +103,25 @@ export function Toolbar(p: Props) {
         サブフォルダ
       </label>
 
+      <button
+        type="button"
+        className="btn"
+        onClick={p.onRefresh}
+        disabled={p.phase === 'listing' || p.phase === 'analyzing'}
+        title={
+          p.refreshReopensPicker
+            ? 'フォルダの選択をもう一度開きます。同じフォルダを選ぶと、新しい画像だけが追加されます'
+            : 'フォルダを読み直して、新しい画像を追加します'
+        }
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5" />
+        </svg>
+        更新
+      </button>
+
       <div className="status" aria-live="polite">
+        {p.notice !== null && p.phase === 'done' && <span className="notice">{p.notice}</span>}
         {p.phase === 'listing' && '読み込み中…'}
         {analyzing && (
           <>
@@ -105,7 +129,7 @@ export function Toolbar(p: Props) {
             <span className="num">{p.progress.total.toLocaleString()}</span>
           </>
         )}
-        {p.phase === 'done' && (
+        {p.phase === 'done' && p.notice === null && (
           <span className="num">
             {p.shown === p.total ? `${p.total.toLocaleString()} 枚` : `${p.shown.toLocaleString()} / ${p.total.toLocaleString()} 枚`}
           </span>
