@@ -30,6 +30,17 @@ const MODES: [SortMode, string][] = [
 
 export function Toolbar(p: Props) {
   const analyzing = p.phase === 'analyzing';
+  // フォルダを選ぶまでは、ロゴだけを出す
+  if (p.folderName === null) {
+    return (
+      <header className="toolbar">
+        <div className="brand">
+          <i aria-hidden="true" />
+          Hueroom
+        </div>
+      </header>
+    );
+  }
   return (
     <header className="toolbar">
       <div className="brand">
@@ -37,7 +48,7 @@ export function Toolbar(p: Props) {
         Hueroom
       </div>
       <button type="button" className="folder-btn" onClick={p.onPick} title="フォルダを選び直す">
-        {p.folderName ?? 'フォルダを選択'}
+        {p.folderName}
       </button>
       <div className="spacer" />
 
