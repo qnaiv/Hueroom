@@ -1,4 +1,4 @@
-import type { DominantColor } from '../types';
+import type { DominantColor, PaletteColor } from '../types';
 import { oklabToOklch, oklabToSrgb, rgbToHex, srgbToOklab, type Lab } from './oklab';
 
 /**
@@ -128,10 +128,10 @@ export function clusterSamples(samples: Sample[], opts: QuantizeOptions = {}): C
   return centers.map((c, i) => ({ ...c, share: (weight[i] as number) / total }));
 }
 
-/** 画素列（RGBA）から主要色を求める。有効な画素が無ければ null */
-export function dominantFromRgba(data: ArrayLike<number>, opts?: QuantizeOptions): DominantColor | null {
-  const clusters = clusterSamples(samplesFromRgba(data), opts);
-  if (clusters.length === 0) return null;
+/** パレットに残す色の最小の占有率。これより小さい色は、ノイズや縁の色とみなして外す */
+const PALETTE_MIN_SHARE = 0.03;
+
+function dominantOf(clusters: Cluster[]): DominantColor {
   let best = clusters[0] as Cluster;
   let bestScore = -1;
   for (const c of clusters) {
@@ -145,4 +145,34 @@ export function dominantFromRgba(data: ArrayLike<number>, opts?: QuantizeOptions
   const { C, H } = oklabToOklch(best.L, best.a, best.b);
   const [r, g, b] = oklabToSrgb(best.L, best.a, best.b);
   return { L: best.L, a: best.a, b: best.b, C, H, hex: rgbToHex(r, g, b) };
+}
+
+/** クラスタ（占有率つき）から、目立つ色だけを占有率の大きい順に並べる。占有率は合計 1 に直す */
+function paletteOf(clusters: Cluster[]): PaletteColor[] {
+  const sorted = clusters.filter((c) => c.share > 0).sort((p, q) => q.share - p.share);
+  let kept = sorted.filter((c) => c.share >= PALETTE_MIN_SHARE);
+  if (kept.length === 0) kept = sorted.slice(0, 1);
+  const total = kept.reduce((n, c) => n + c.share, 0);
+  return kept.map((c) => {
+    const [r, g, b] = oklabToSrgb(c.L, c.a, c.b);
+    return { L: c.L, a: c.a, b: c.b, hex: rgbToHex(r, g, b), share: c.share / total };
+  });
+}
+
+/**
+ * 画素列（RGBA）から、主要色と配色（パレット）を同時に求める（クラスタリングは 1 回だけ）。
+ * 有効な画素が無ければ null
+ */
+export function colorsFromRgba(
+  data: ArrayLike<number>,
+  opts?: QuantizeOptions,
+): { color: DominantColor; palette: PaletteColor[] } | null {
+  const clusters = clusterSamples(samplesFromRgba(data), opts);
+  if (clusters.length === 0) return null;
+  return { color: dominantOf(clusters), palette: paletteOf(clusters) };
+}
+
+/** 画素列（RGBA）から主要色を求める。有効な画素が無ければ null */
+export function dominantFromRgba(data: ArrayLike<number>, opts?: QuantizeOptions): DominantColor | null {
+  return colorsFromRgba(data, opts)?.color ?? null;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dominantFromRgba } from './quantize';
+import { colorsFromRgba, dominantFromRgba } from './quantize';
 
 /** [r,g,b,割合] の列から RGBA 画素列（総数 n）を作る */
 function pixels(parts: [number, number, number, number][], n = 1024, alpha = 255): Uint8ClampedArray {
@@ -61,5 +61,34 @@ describe('dominantFromRgba', () => {
 
   it('空の入力は null', () => {
     expect(dominantFromRgba(new Uint8ClampedArray(0))).toBeNull();
+  });
+});
+
+describe('colorsFromRgba（パレット）', () => {
+  it('主要色は dominantFromRgba と同じ。パレットは占有率の大きい順で、合計が 1', () => {
+    const d = pixels([[220, 20, 20, 0.5], [20, 20, 220, 0.3], [240, 240, 240, 0.2]]);
+    const r = colorsFromRgba(d)!;
+    expect(r.color).toEqual(dominantFromRgba(d));
+    expect(r.palette.length).toBeGreaterThanOrEqual(3);
+    for (let i = 1; i < r.palette.length; i++) expect(r.palette[i - 1]!.share).toBeGreaterThanOrEqual(r.palette[i]!.share);
+    expect(r.palette.reduce((n, c) => n + c.share, 0)).toBeCloseTo(1, 6);
+    expect(r.palette[0]!.share).toBeGreaterThan(0.4);
+    expect(r.palette[0]!.hex).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it('単色画像のパレットは 1 色', () => {
+    const r = colorsFromRgba(pixels([[200, 40, 40, 1]]))!;
+    expect(r.palette).toHaveLength(1);
+    expect(r.palette[0]!.share).toBeCloseTo(1);
+    expect(r.palette[0]!.hex).toBe('#c82828');
+  });
+
+  it('ごく小さな色（3% 未満）はパレットに残さない', () => {
+    const r = colorsFromRgba(pixels([[128, 128, 128, 0.99], [230, 30, 40, 0.01]]))!;
+    expect(r.palette.every((c) => c.share >= 0.03)).toBe(true);
+  });
+
+  it('有効な画素が無ければ null', () => {
+    expect(colorsFromRgba(new Uint8ClampedArray(0))).toBeNull();
   });
 });

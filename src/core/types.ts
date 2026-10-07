@@ -10,6 +10,16 @@ export interface DominantColor {
   hex: string;
 }
 
+/** パレットの 1 色。占有率の大きい順に並べる */
+export interface PaletteColor {
+  L: number;
+  a: number;
+  b: number;
+  hex: string;
+  /** 占有率 0〜1（パレット全体で合計 1） */
+  share: number;
+}
+
 /** 構図の指標（32×32 の輝度から求める。値の意味は core/composition.ts） */
 export interface Composition {
   /** のっぺりした（輪郭の弱い）画素の割合 0〜1 */
@@ -42,6 +52,8 @@ export interface Analysis {
   composition: Composition;
   /** 質感の指標。版 4 以前のキャッシュには無い（再解析される） */
   tone: Tone;
+  /** 配色（主要色を選ぶときに出した 5 色の中から、目立つ色）。版 5 以前のキャッシュには無い（再解析される） */
+  palette: PaletteColor[];
   /** 約 200px の正方形サムネイル */
   thumb: Blob;
   /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */

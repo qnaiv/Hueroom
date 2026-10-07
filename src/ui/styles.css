@@ -203,6 +203,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .chip[aria-pressed='true'] .num { color: inherit; opacity: 0.85; }
 .chip:disabled { opacity: 0.4; cursor: default; }
 
+/* 配色 */
+.palette-pill { gap: 8px; border-color: var(--accent); }
+.palette-pill-bar { display: inline-flex; border-radius: 4px; overflow: hidden; }
+.palette-pill-bar i { width: 12px; height: 14px; }
+.lb-palette { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 2px; }
+.lb-palette-bar { display: flex; height: 14px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.lb-palette-bar i { flex-basis: 0; min-width: 2px; }
+.lb-palette-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.lb-swatch {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: inherit; font-size: 12px; cursor: pointer;
+}
+.lb-swatch:hover { background: var(--surface-2); }
+.lb-swatch i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(128, 128, 128, 0.4); }
+
 @media (max-width: 640px) {
   .filterbar { padding: 6px 12px; }
 

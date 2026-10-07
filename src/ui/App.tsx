@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FavoritesStore } from '../core/cache/favorites';
+import { sortByPalette } from '../core/palette';
 import { toneTags, toneThresholds, TONE_TAGS, type ToneTag } from '../core/tone';
 import { compositionTags, spaceThresholds, COMPOSITION_TAGS, type CompositionTag } from '../core/composition';
 import { snakeCells } from '../core/layout/snake';
@@ -28,6 +29,8 @@ export function App() {
   const [tileSize, setTileSize] = useState(128);
   const [cols, setCols] = useState(6);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  // 配色が近い順に並べているときの、基準の写真（key）
+  const [paletteKey, setPaletteKey] = useState<string | null>(null);
   const [compTag, setCompTag] = useState<CompositionTag | null>(null);
   const [when, setWhen] = useState<WhenFilter>(NO_FILTER);
   const [toneTag, setToneTag] = useState<ToneTag | null>(null);
@@ -58,7 +61,12 @@ export function App() {
     if (openKey === null) setFilterFavorites(favorites);
   }, [favorites, openKey]);
 
-  const sorted = useMemo(() => sortItems(items, mode, direction), [items, mode, direction]);
+  const paletteRef = useMemo(() => (paletteKey === null ? undefined : items.find((x) => x.key === paletteKey)), [items, paletteKey]);
+  const refPalette = paletteRef?.analysis?.palette;
+  const sorted = useMemo(
+    () => (refPalette ? sortByPalette(items, refPalette) : sortItems(items, mode, direction)),
+    [items, mode, direction, refPalette],
+  );
   // 質感の傾向（明るい・暗いなどは、このフォルダの中での比較）
   const toneTh = useMemo(() => toneThresholds(items.flatMap((x) => (x.analysis ? [x.analysis.tone] : []))), [items]);
   const toneCounts = useMemo(() => {
@@ -89,12 +97,12 @@ export function App() {
   );
   const whenCounts = useMemo(() => countWhen(items, when), [items, when]);
   // 色順は蛇行配置、それ以外は通常の行優先
-  const cells = useMemo(() => (mode === 'color' ? snakeCells(displayed, cols) : displayed), [displayed, cols, mode]);
+  const cells = useMemo(() => (mode === 'color' && !refPalette ? snakeCells(displayed, cols) : displayed), [displayed, cols, mode, refPalette]);
 
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites, when, compTag, toneTag]);
+  }, [mode, direction, onlyFavorites, when, compTag, toneTag, refPalette]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -119,7 +127,12 @@ export function App() {
           closeFolder();
         }}
         mode={mode}
-        onMode={setMode}
+        onMode={(m) => {
+          setPaletteKey(null);
+          setMode(m);
+        }}
+        palette={paletteRef && refPalette ? { name: paletteRef.name, colors: refPalette.map((c) => c.hex) } : null}
+        onClearPalette={() => setPaletteKey(null)}
         direction={direction}
         onDirection={setDirection}
         onlyFavorites={onlyFavorites}
@@ -166,7 +179,7 @@ export function App() {
               </p>
             )}
           </div>
-          <NavBar variant={mode} cells={cells} cols={cols} favorites={favorites} scrollerRef={scrollerRef} />
+          <NavBar variant={refPalette ? 'color' : mode} cells={cells} cols={cols} favorites={favorites} scrollerRef={scrollerRef} />
         </div>
       ) : (
         <Welcome onPick={pick} onReopen={reopen} restore={restore} persistent={adapter.capabilities.persistent} error={error} />
@@ -179,6 +192,10 @@ export function App() {
           isFavorite={isFavorite(openItem, favorites)}
           canFavorite={openItem.favoriteId !== undefined}
           onToggleFavorite={() => openItem.favoriteId !== undefined && toggleFavorite(openItem.favoriteId)}
+          onPaletteSort={() => {
+            setPaletteKey(openItem.key);
+            close();
+          }}
           onMove={move}
           onClose={close}
         />
