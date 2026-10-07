@@ -13,6 +13,11 @@ interface Props {
   onClearPalette(): void;
   direction: SortDirection;
   onDirection(d: SortDirection): void;
+  /** 絞り込みのパネルを開いているか */
+  filterOpen: boolean;
+  onFilterOpen(v: boolean): void;
+  /** いま効いている絞り込みの数（開いていなくても、バッジで分かるように） */
+  filterCount: number;
   onlyFavorites: boolean;
   onOnlyFavorites(v: boolean): void;
   favoriteCount: number;
@@ -94,6 +99,21 @@ export function Toolbar(p: Props) {
           {p.direction === 'asc' ? '古い順 ↑' : '新しい順 ↓'}
         </button>
       )}
+
+      <button
+        type="button"
+        className="btn filter-btn"
+        aria-expanded={p.filterOpen}
+        aria-controls="filter-panel"
+        onClick={() => p.onFilterOpen(!p.filterOpen)}
+        title={p.filterOpen ? '絞り込みを閉じる' : '絞り込みを開く'}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h16l-6 7.5V19l-4-2v-4.5z" />
+        </svg>
+        絞り込み
+        {p.filterCount > 0 && <span className="filter-badge num">{p.filterCount}</span>}
+      </button>
 
       <button
         type="button"
