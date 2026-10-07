@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FavoritesStore } from '../core/cache/favorites';
+import { toneTags, toneThresholds, TONE_TAGS, type ToneTag } from '../core/tone';
 import { compositionTags, spaceThresholds, COMPOSITION_TAGS, type CompositionTag } from '../core/composition';
 import { snakeCells } from '../core/layout/snake';
 import { sortItems } from '../core/sort';
@@ -8,6 +9,7 @@ import { NO_FILTER, countWhen, matchesWhen, type WhenFilter } from '../core/when
 import { createWebAdapter } from '../platform/web';
 import { CompositionBar } from './CompositionBar';
 import { FilterBar } from './FilterBar';
+import { ToneBar } from './ToneBar';
 import { NavBar } from './NavBar';
 import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
@@ -28,6 +30,7 @@ export function App() {
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [compTag, setCompTag] = useState<CompositionTag | null>(null);
   const [when, setWhen] = useState<WhenFilter>(NO_FILTER);
+  const [toneTag, setToneTag] = useState<ToneTag | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   const { folder, items, phase, progress, restore, error, notice, pick, reopen, close: closeFolder, refresh } = useGallery(adapter, recursive);
@@ -56,6 +59,13 @@ export function App() {
   }, [favorites, openKey]);
 
   const sorted = useMemo(() => sortItems(items, mode, direction), [items, mode, direction]);
+  // 質感の傾向（明るい・暗いなどは、このフォルダの中での比較）
+  const toneTh = useMemo(() => toneThresholds(items.flatMap((x) => (x.analysis ? [x.analysis.tone] : []))), [items]);
+  const toneCounts = useMemo(() => {
+    const counts = Object.fromEntries(TONE_TAGS.map((t) => [t, 0])) as Record<ToneTag, number>;
+    for (const x of items) if (x.analysis) for (const t of toneTags(x.analysis.tone, toneTh)) counts[t]++;
+    return counts;
+  }, [items, toneTh]);
   // 構図の傾向（余白の多い・少ないは、このフォルダの中での比較）
   const spaceTh = useMemo(
     () => spaceThresholds(items.flatMap((x) => (x.analysis ? [x.analysis.composition.space] : []))),
@@ -72,9 +82,10 @@ export function App() {
         (x) =>
           matchesWhen(x, when) &&
           (compTag === null || (x.analysis !== undefined && compositionTags(x.analysis.composition, spaceTh).includes(compTag))) &&
+          (toneTag === null || (x.analysis !== undefined && toneTags(x.analysis.tone, toneTh).includes(toneTag))) &&
           (!onlyFavorites || isFavorite(x, filterFavorites)),
       ),
-    [sorted, when, compTag, spaceTh, onlyFavorites, filterFavorites],
+    [sorted, when, compTag, spaceTh, toneTag, toneTh, onlyFavorites, filterFavorites],
   );
   const whenCounts = useMemo(() => countWhen(items, when), [items, when]);
   // 色順は蛇行配置、それ以外は通常の行優先
@@ -83,7 +94,7 @@ export function App() {
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites, when, compTag]);
+  }, [mode, direction, onlyFavorites, when, compTag, toneTag]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -128,6 +139,7 @@ export function App() {
       />
       {folder && <FilterBar filter={when} onChange={setWhen} counts={whenCounts} />}
       {folder && <CompositionBar tag={compTag} onChange={setCompTag} counts={compCounts} />}
+      {folder && <ToneBar tag={toneTag} onChange={setToneTag} counts={toneCounts} />}
       {folder ? (
         <div className="main">
           <div className="scroller" ref={scrollerRef}>
@@ -146,6 +158,8 @@ export function App() {
                   ? 'この季節・時間帯の写真はありません。撮影日時（EXIF）が無い画像は、絞り込みの対象外です。'
                   : compTag !== null
                   ? 'この構図の写真は見つかりません。解析が終わっていない画像は、絞り込みの対象外です。'
+                  : toneTag !== null
+                  ? 'この質感の写真は見つかりません。解析が終わっていない画像は、絞り込みの対象外です。'
                   : onlyFavorites
                   ? 'お気に入りはまだありません。画像を開いて「お気に入りに追加」を押すと、ここに集まります。'
                   : error ?? '画像（jpg / png / webp / gif）が見つかりませんでした。'}

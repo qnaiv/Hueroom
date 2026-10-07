@@ -25,11 +25,23 @@ export interface Composition {
   symmetry: number;
 }
 
+/** 明るさ・コントラスト・彩度の質感（32×32 の画素から求める。値の意味は core/tone.ts） */
+export interface Tone {
+  /** 全体の明るさ（OKLab の L の平均、0〜1） */
+  brightness: number;
+  /** 明暗の差（L の 5〜95 パーセンタイルの幅、0〜1） */
+  contrast: number;
+  /** 色の鮮やかさ（OKLCH の C の平均） */
+  saturation: number;
+}
+
 /** 色抽出の結果（キャッシュ対象） */
 export interface Analysis {
   color: DominantColor;
   /** 構図の指標。版 3 以前のキャッシュには無い（再解析される） */
   composition: Composition;
+  /** 質感の指標。版 4 以前のキャッシュには無い（再解析される） */
+  tone: Tone;
   /** 約 200px の正方形サムネイル */
   thumb: Blob;
   /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */

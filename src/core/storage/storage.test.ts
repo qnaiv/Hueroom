@@ -5,6 +5,7 @@ import { FavoritesStore } from '../cache/favorites';
 import { cacheKey, favoriteId, imageKey } from '../keys';
 
 const COMP = { space: 0.5, detail: 0.05, cx: 0.5, cy: 0.5, vertical: 0, symmetry: 0.1 };
+const TONE = { brightness: 0.5, contrast: 0.4, saturation: 0.08 };
 
 describe('imageKey', () => {
   it('パス・更新日時・サイズが違えば別のキーになる', () => {
@@ -35,7 +36,7 @@ describe('cacheKey / favoriteId', () => {
 describe('analysisCache', () => {
   it('保存した解析結果を取り出せる。未保存は undefined', async () => {
     const cache = createAnalysisCache('t-cache');
-    const value = { color: { L: 0.5, a: 0.1, b: 0.1, C: 0.14, H: 45, hex: '#aa5533' }, composition: COMP, thumb: new Blob(['x']) };
+    const value = { color: { L: 0.5, a: 0.1, b: 0.1, C: 0.14, H: 45, hex: '#aa5533' }, composition: COMP, tone: TONE, thumb: new Blob(['x']) };
     expect(await cache.get('k')).toBeUndefined();
     await cache.set('k', value);
     const got = await cache.get('k');
@@ -54,7 +55,7 @@ describe('analysisCache の版', () => {
     expect(await cache.get('old')).toBeUndefined();
     expect(await cache.getMany(['old'])).toEqual([undefined]);
     // 新しく保存すると、撮影日時つきで読める
-    await cache.set('old', { color: { L: 0, a: 0, b: 0, C: 0, H: 0, hex: '#000000' }, composition: COMP, thumb: new Blob(['y']), shotAt: 123 });
+    await cache.set('old', { color: { L: 0, a: 0, b: 0, C: 0, H: 0, hex: '#000000' }, composition: COMP, tone: TONE, thumb: new Blob(['y']), shotAt: 123 });
     expect((await cache.get('old'))?.shotAt).toBe(123);
   });
 });

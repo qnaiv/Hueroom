@@ -6,10 +6,14 @@ export interface Lab {
   b: number;
 }
 
-const toLinear = (v: number): number => {
+const linearize = (v: number): number => {
   const c = v / 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 };
+
+/** 0〜255 の整数は表引き（累乗の計算を 1 画素あたり 3 回省ける）。それ以外は計算する */
+const LINEAR_TABLE = Float64Array.from({ length: 256 }, (_, i) => linearize(i));
+const toLinear = (v: number): number => LINEAR_TABLE[v] ?? linearize(v);
 
 const fromLinear = (v: number): number => {
   const c = Math.min(1, Math.max(0, v));
