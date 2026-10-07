@@ -2,6 +2,7 @@ import { EXIF_HEAD_BYTES, readExifDate } from '../exif';
 import { sha256Hex } from '../hash';
 import type { Analysis } from '../types';
 import { toneFromRgba } from '../tone';
+import { compositionFromRgba } from '../composition';
 import { dominantFromRgba } from './quantize';
 
 /** 色抽出に使う縮小サイズ */
@@ -66,6 +67,7 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     const { data } = small.ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
     const color = dominantFromRgba(data);
     if (!color) return null;
+    const composition = compositionFromRgba(data, SAMPLE_SIZE);
     const tone = toneFromRgba(data, SAMPLE_SIZE);
 
     let blobOut = await thumb.toBlob('image/webp', 0.8);
@@ -85,7 +87,7 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     } catch {
       hash = undefined;
     }
-    return { color, tone, thumb: blobOut, shotAt, hash };
+    return { color, composition, tone, thumb: blobOut, shotAt, hash };
   } finally {
     bitmap.close();
   }
