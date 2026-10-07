@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FavoritesStore } from '../core/cache/favorites';
+import { toneTags, toneThresholds, TONE_TAGS, type ToneTag } from '../core/tone';
 import { snakeCells } from '../core/layout/snake';
 import { sortItems } from '../core/sort';
 import type { SortDirection, SortMode } from '../core/types';
 import { createWebAdapter } from '../platform/web';
+import { ToneBar } from './ToneBar';
 import { NavBar } from './NavBar';
 import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
@@ -22,6 +24,7 @@ export function App() {
   const [tileSize, setTileSize] = useState(128);
   const [cols, setCols] = useState(6);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [toneTag, setToneTag] = useState<ToneTag | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   const { folder, items, phase, progress, restore, error, notice, pick, reopen, close: closeFolder, refresh } = useGallery(adapter, recursive);
@@ -50,9 +53,21 @@ export function App() {
   }, [favorites, openKey]);
 
   const sorted = useMemo(() => sortItems(items, mode, direction), [items, mode, direction]);
+  // 質感の傾向（明るい・暗いなどは、このフォルダの中での比較）
+  const toneTh = useMemo(() => toneThresholds(items.flatMap((x) => (x.analysis ? [x.analysis.tone] : []))), [items]);
+  const toneCounts = useMemo(() => {
+    const counts = Object.fromEntries(TONE_TAGS.map((t) => [t, 0])) as Record<ToneTag, number>;
+    for (const x of items) if (x.analysis) for (const t of toneTags(x.analysis.tone, toneTh)) counts[t]++;
+    return counts;
+  }, [items, toneTh]);
   const displayed = useMemo(
-    () => (onlyFavorites ? sorted.filter((x) => isFavorite(x, filterFavorites)) : sorted),
-    [sorted, onlyFavorites, filterFavorites],
+    () =>
+      sorted.filter(
+        (x) =>
+          (toneTag === null || (x.analysis !== undefined && toneTags(x.analysis.tone, toneTh).includes(toneTag))) &&
+          (!onlyFavorites || isFavorite(x, filterFavorites)),
+      ),
+    [sorted, toneTag, toneTh, onlyFavorites, filterFavorites],
   );
   // 色順は蛇行配置、それ以外は通常の行優先
   const cells = useMemo(() => (mode === 'color' ? snakeCells(displayed, cols) : displayed), [displayed, cols, mode]);
@@ -60,7 +75,7 @@ export function App() {
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites]);
+  }, [mode, direction, onlyFavorites, toneTag]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -103,6 +118,7 @@ export function App() {
         onRefresh={refresh}
         refreshReopensPicker={!adapter.capabilities.persistent}
       />
+      {folder && <ToneBar tag={toneTag} onChange={setToneTag} counts={toneCounts} />}
       {folder ? (
         <div className="main">
           <div className="scroller" ref={scrollerRef}>
@@ -117,7 +133,9 @@ export function App() {
             />
             {phase !== 'idle' && phase !== 'listing' && displayed.length === 0 && (
               <p className="empty">
-                {onlyFavorites
+                {toneTag !== null
+                  ? 'この質感の写真は見つかりません。解析が終わっていない画像は、絞り込みの対象外です。'
+                  : onlyFavorites
                   ? 'お気に入りはまだありません。画像を開いて「お気に入りに追加」を押すと、ここに集まります。'
                   : error ?? '画像（jpg / png / webp / gif）が見つかりませんでした。'}
               </p>
