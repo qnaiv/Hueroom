@@ -1,6 +1,8 @@
 import { EXIF_HEAD_BYTES, readExifDate } from '../exif';
 import { sha256Hex } from '../hash';
 import type { Analysis } from '../types';
+import { toneFromRgba } from '../tone';
+import { compositionFromRgba } from '../composition';
 import { colorsFromRgba } from './quantize';
 
 /** 色抽出に使う縮小サイズ */
@@ -66,6 +68,8 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     const colors = colorsFromRgba(data);
     if (!colors) return null;
     const { color, palette } = colors;
+    const composition = compositionFromRgba(data, SAMPLE_SIZE);
+    const tone = toneFromRgba(data, SAMPLE_SIZE);
 
     let blobOut = await thumb.toBlob('image/webp', 0.8);
     // webp を書き出せない環境（Safari など）では jpeg にする
@@ -84,7 +88,7 @@ export async function analyzeBlob(blob: Blob): Promise<Analysis | null> {
     } catch {
       hash = undefined;
     }
-    return { color, palette, thumb: blobOut, shotAt, hash };
+    return { color, palette, composition, tone, thumb: blobOut, shotAt, hash };
   } finally {
     bitmap.close();
   }
