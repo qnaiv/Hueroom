@@ -2,10 +2,10 @@ import { kv, type KV } from '../storage/idb';
 import type { Analysis } from '../types';
 
 /**
- * 解析結果の形式の版。Analysis に項目を足したとき（例: 撮影日時）に上げる。
+ * 解析結果の形式の版。Analysis に項目を足したとき（例: 撮影日時、配色）に上げる。
  * 古い版の保存データは無かったものとして扱い、再解析して上書きする。
  */
-export const ANALYSIS_VERSION = 3;
+export const ANALYSIS_VERSION = 6;
 
 type Stored = Analysis & { version: number };
 

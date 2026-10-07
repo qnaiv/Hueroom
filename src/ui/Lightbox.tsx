@@ -10,6 +10,8 @@ interface Props {
   /** 解析が終わっていない画像は、まだお気に入りにできない */
   canFavorite: boolean;
   onToggleFavorite(): void;
+  /** この写真の配色に近い順に、一覧を並べ替える */
+  onPaletteSort(): void;
   onMove(delta: number): void;
   onClose(): void;
 }
@@ -22,11 +24,12 @@ const formatDateTime = (t: number) => {
 const formatBytes = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 /** 拡大表示。ここでお気に入りの登録・解除ができる */
-export function Lightbox({ item, index, count, isFavorite, canFavorite, onToggleFavorite, onMove, onClose }: Props) {
+export function Lightbox({ item, index, count, isFavorite, canFavorite, onToggleFavorite, onPaletteSort, onMove, onClose }: Props) {
   const [src, setSrc] = useState<string>();
   const [size, setSize] = useState<{ w: number; h: number }>();
   const [loaded, setLoaded] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   // 元画像を読み込む。読み込み中はサムネイルを引き伸ばして見せる
   useEffect(() => {
@@ -65,7 +68,22 @@ export function Lightbox({ item, index, count, isFavorite, canFavorite, onToggle
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, onMove, onToggleFavorite]);
 
+  // 色コードをコピーしたことを、少しだけ表示する
+  useEffect(() => {
+    if (copied === null) return;
+    const t = setTimeout(() => setCopied(null), 1500);
+    return () => clearTimeout(t);
+  }, [copied]);
+  useEffect(() => setCopied(null), [item]);
+  const copyHex = (code: string) => {
+    navigator.clipboard?.writeText(code).then(
+      () => setCopied(code),
+      () => undefined,
+    );
+  };
+
   const hex = item.analysis?.color.hex;
+  const palette = item.analysis?.palette ?? [];
   return (
     <div className="lightbox" role="dialog" aria-modal="true" aria-label={item.name} onClick={onClose}>
       <div className="lightbox-stage" onClick={(e) => e.stopPropagation()}>
@@ -110,7 +128,39 @@ export function Lightbox({ item, index, count, isFavorite, canFavorite, onToggle
               {item.shotFromExif ? '撮影' : '更新'} {formatDateTime(item.shotAt)}
             </span>
           </div>
+          {palette.length > 0 && (
+            <div className="lb-palette">
+              <div className="lb-palette-bar" aria-hidden="true">
+                {palette.map((c) => (
+                  <i key={c.hex} style={{ background: c.hex, flexGrow: c.share }} />
+                ))}
+              </div>
+              <div className="lb-palette-list" role="group" aria-label="配色（押すと色コードをコピー）">
+                {palette.map((c) => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    className="lb-swatch"
+                    onClick={() => copyHex(c.hex)}
+                    title={`${c.hex.toUpperCase()}（${Math.round(c.share * 100)}%）。押すとコピー`}
+                  >
+                    <i style={{ background: c.hex }} />
+                    <span className="num">{copied === c.hex ? 'コピーしました' : c.hex.toUpperCase()}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="lb-actions">
+            <button
+              type="button"
+              className="btn"
+              onClick={onPaletteSort}
+              disabled={palette.length === 0}
+              title="この写真と配色が近い順に、一覧を並べ替えます"
+            >
+              この配色に近い順に並べる
+            </button>
             <button
               type="button"
               className="btn fav-btn"

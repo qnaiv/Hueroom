@@ -7,6 +7,7 @@ import type { Extractor } from './extractor';
 
 const analysis = (hex: string): Analysis => ({
   color: { L: 0.5, a: 0, b: 0, C: 0, H: 0, hex },
+  palette: [{ L: 0.5, a: 0, b: 0, hex, share: 1 }],
   thumb: new Blob(['t']),
 });
 

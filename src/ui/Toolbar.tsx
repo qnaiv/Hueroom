@@ -8,6 +8,9 @@ interface Props {
   onHome(): void;
   mode: SortMode;
   onMode(m: SortMode): void;
+  /** 配色が近い順に並べているとき、その基準の写真 */
+  palette: { name: string; colors: string[] } | null;
+  onClearPalette(): void;
   direction: SortDirection;
   onDirection(d: SortDirection): void;
   onlyFavorites: boolean;
@@ -60,12 +63,28 @@ export function Toolbar(p: Props) {
 
       <div className="seg" role="group" aria-label="並び順">
         {MODES.map(([m, label]) => (
-          <button key={m} type="button" aria-pressed={p.mode === m} onClick={() => p.onMode(m)}>
+          <button key={m} type="button" aria-pressed={p.palette === null && p.mode === m} onClick={() => p.onMode(m)}>
             {label}
           </button>
         ))}
       </div>
-      {p.mode !== 'color' && (
+      {p.palette !== null && (
+        <button
+          type="button"
+          className="btn palette-pill"
+          onClick={p.onClearPalette}
+          title="配色での並べ替えをやめる"
+          aria-label={`配色が近い順（基準: ${p.palette.name}）。押すと解除`}
+        >
+          <span className="palette-pill-bar" aria-hidden="true">
+            {p.palette.colors.map((c) => (
+              <i key={c} style={{ background: c }} />
+            ))}
+          </span>
+          配色が近い順 <span aria-hidden="true">✕</span>
+        </button>
+      )}
+      {p.palette === null && p.mode !== 'color' && (
         <button
           type="button"
           className="btn"

@@ -10,9 +10,21 @@ export interface DominantColor {
   hex: string;
 }
 
+/** パレットの 1 色。占有率の大きい順に並べる */
+export interface PaletteColor {
+  L: number;
+  a: number;
+  b: number;
+  hex: string;
+  /** 占有率 0〜1（パレット全体で合計 1） */
+  share: number;
+}
+
 /** 色抽出の結果（キャッシュ対象） */
 export interface Analysis {
   color: DominantColor;
+  /** 配色（主要色を選ぶときに出した 5 色の中から、目立つ色）。版 5 以前のキャッシュには無い（再解析される） */
+  palette: PaletteColor[];
   /** 約 200px の正方形サムネイル */
   thumb: Blob;
   /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */
