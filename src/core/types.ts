@@ -10,9 +10,26 @@ export interface DominantColor {
   hex: string;
 }
 
+/** 構図の指標（32×32 の輝度から求める。値の意味は core/composition.ts） */
+export interface Composition {
+  /** のっぺりした（輪郭の弱い）画素の割合 0〜1 */
+  space: number;
+  /** 輪郭の強さの平均（細かさ） */
+  detail: number;
+  /** 輪郭で重み付けした重心（0〜1、左上が 0）。輪郭がほぼ無ければ 0.5 */
+  cx: number;
+  cy: number;
+  /** 上半分の平均輝度 − 下半分の平均輝度（−1〜1） */
+  vertical: number;
+  /** 左半分と、右半分を折り返したものとの輝度差の平均（0 に近いほど対称） */
+  symmetry: number;
+}
+
 /** 色抽出の結果（キャッシュ対象） */
 export interface Analysis {
   color: DominantColor;
+  /** 構図の指標。版 3 以前のキャッシュには無い（再解析される） */
+  composition: Composition;
   /** 約 200px の正方形サムネイル */
   thumb: Blob;
   /** 撮影日時（EXIF の DateTimeOriginal）。読めない画像は undefined */
