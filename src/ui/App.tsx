@@ -160,6 +160,7 @@ export function App() {
         notice={notice}
         onRefresh={refresh}
         refreshReopensPicker={!adapter.capabilities.persistent}
+        photosMode={adapter.capabilities.pickKind === 'photos'}
       />
       {folder && filterOpen && (
         <FilterPanel
@@ -212,7 +213,14 @@ export function App() {
           <NavBar variant={refPalette ? 'color' : mode} cells={cells} cols={cols} favorites={favorites} scrollerRef={scrollerRef} />
         </div>
       ) : (
-        <Welcome onPick={pick} onReopen={reopen} restore={restore} persistent={adapter.capabilities.persistent} error={error} />
+        <Welcome
+          onPick={pick}
+          onReopen={reopen}
+          restore={restore}
+          persistent={adapter.capabilities.persistent}
+          photosMode={adapter.capabilities.pickKind === 'photos'}
+          error={error}
+        />
       )}
       {openItem && (
         <Lightbox

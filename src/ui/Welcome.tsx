@@ -5,11 +5,13 @@ interface Props {
   onReopen(): void;
   restore: RestoreResult;
   persistent: boolean;
+  /** true のとき、フォルダではなく写真を選ぶ（iPhone / iPad） */
+  photosMode: boolean;
   error: string | null;
 }
 
 /** フォルダ未選択のときの画面 */
-export function Welcome({ onPick, onReopen, restore, persistent, error }: Props) {
+export function Welcome({ onPick, onReopen, restore, persistent, photosMode, error }: Props) {
   return (
     <main className="welcome">
       <div className="welcome-card">
@@ -19,10 +21,14 @@ export function Welcome({ onPick, onReopen, restore, persistent, error }: Props)
           ))}
         </div>
         <h1>Hueroom</h1>
-        <p>フォルダを選ぶと、画像が色のグラデーションでつながって並びます。</p>
+        <p>
+          {photosMode
+            ? '写真を選ぶと、色のグラデーションでつながって並びます。'
+            : 'フォルダを選ぶと、画像が色のグラデーションでつながって並びます。'}
+        </p>
         <div className="welcome-actions">
           <button type="button" className="btn primary" onClick={onPick}>
-            フォルダを選ぶ
+            {photosMode ? '写真を選ぶ' : 'フォルダを選ぶ'}
           </button>
           {restore.status === 'needs-permission' && (
             <button type="button" className="btn" onClick={onReopen}>
@@ -37,7 +43,9 @@ export function Welcome({ onPick, onReopen, restore, persistent, error }: Props)
         )}
         <p className="fine">
           画像は端末の外に送信されません。
-          {!persistent && ' このブラウザでは前回のフォルダを覚えられないため、毎回フォルダを選びます（Chrome / Edge なら次回から開き直せます）。'}
+          {photosMode
+            ? ' iPhone / iPad では、フォルダごとは選べないため、写真を選びます。一度に選びきれないときは、あとから「写真を追加」で足せます（毎回選び直しになりますが、お気に入りは引き継がれます）。'
+            : !persistent && ' このブラウザでは前回のフォルダを覚えられないため、毎回フォルダを選びます（Chrome / Edge なら次回から開き直せます）。'}
         </p>
       </div>
     </main>

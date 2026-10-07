@@ -182,7 +182,8 @@ export function useGallery(adapter: FolderAdapter, recursive: boolean) {
     if (!folder || phase === 'listing' || phase === 'analyzing') return;
     if (!adapter.capabilities.persistent) {
       try {
-        const f = await adapter.pickFolder();
+        // 写真を選ぶ方式は、いま選んでいる写真に足す。フォルダを選ぶ方式は、選び直す
+        const f = await adapter.pickFolder({ append: adapter.capabilities.appendable === true });
         if (f) {
           softRef.current = true;
           setFolder(f);

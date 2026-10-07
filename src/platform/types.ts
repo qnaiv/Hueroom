@@ -16,6 +16,14 @@ export type RestoreResult =
   | { status: 'needs-permission'; folderName: string; request(): Promise<FolderHandle | null> }
   | { status: 'none' };
 
+export interface PickOptions {
+  /**
+   * true のとき、いま選んでいるものに足す（写真を選ぶ方式で、一度に選びきれないときの「追加」）。
+   * false または省略のときは、選び直す（それまでの選択は捨てる）。
+   */
+  append?: boolean;
+}
+
 export interface ListOptions {
   /** サブフォルダも含める */
   recursive: boolean;
@@ -27,8 +35,8 @@ export interface ListOptions {
  * 表示・色抽出・ソートはこれだけに依存する共通コード。
  */
 export interface FolderAdapter {
-  /** ピッカーを開いてフォルダを選ぶ。キャンセルは null */
-  pickFolder(): Promise<FolderHandle | null>;
+  /** ピッカーを開いてフォルダ（または写真）を選ぶ。キャンセルは null */
+  pickFolder(opts?: PickOptions): Promise<FolderHandle | null>;
   /** 前回のフォルダを復元する（許可の再確認を含む） */
   restoreLast(): Promise<RestoreResult>;
   /** 画像（jpg/jpeg/png/webp/gif）を順に列挙する */
@@ -39,5 +47,12 @@ export interface FolderAdapter {
     /** 次回起動時にフォルダを覚えていられるか */
     persistent: boolean;
     watch: boolean;
+    /**
+     * 何を選ぶか。'folder' はフォルダごと、'photos' は写真を（複数）選ぶ。
+     * iPhone / iPad の Safari は、フォルダを選べないので 'photos'。省略は 'folder'
+     */
+    pickKind?: 'folder' | 'photos';
+    /** pickFolder の append に対応しているか（'photos' の方式のみ） */
+    appendable?: boolean;
   };
 }

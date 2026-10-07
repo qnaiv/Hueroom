@@ -35,6 +35,8 @@ interface Props {
   onRefresh(): void;
   /** true のとき、更新はフォルダの選択をもう一度開く（フォルダを覚えられないブラウザ） */
   refreshReopensPicker: boolean;
+  /** true のとき、写真を選ぶ方式（iPhone / iPad）。更新は「写真を追加」になり、サブフォルダの設定は出さない */
+  photosMode: boolean;
 }
 
 const MODES: [SortMode, string][] = [
@@ -137,10 +139,12 @@ export function Toolbar(p: Props) {
           aria-label="タイルの大きさ"
         />
       </label>
-      <label className="check">
-        <input type="checkbox" checked={p.recursive} onChange={(e) => p.onRecursive(e.target.checked)} />
-        サブフォルダ
-      </label>
+      {!p.photosMode && (
+        <label className="check">
+          <input type="checkbox" checked={p.recursive} onChange={(e) => p.onRecursive(e.target.checked)} />
+          サブフォルダ
+        </label>
+      )}
 
       <button
         type="button"
@@ -148,15 +152,17 @@ export function Toolbar(p: Props) {
         onClick={p.onRefresh}
         disabled={p.phase === 'listing' || p.phase === 'analyzing'}
         title={
-          p.refreshReopensPicker
+          p.photosMode
+            ? '写真をもう一度選びます。選んだ写真が、いまの一覧に追加されます'
+            : p.refreshReopensPicker
             ? 'フォルダの選択をもう一度開きます。同じフォルダを選ぶと、新しい画像だけが追加されます'
             : 'フォルダを読み直して、新しい画像を追加します'
         }
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5" />
+          {p.photosMode ? <path d="M12 5v14M5 12h14" /> : <path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5" />}
         </svg>
-        更新
+        {p.photosMode ? '写真を追加' : '更新'}
       </button>
 
       <div className="status" aria-live="polite">
