@@ -61,6 +61,26 @@ describe('analysisCache の版', () => {
   });
 });
 
+describe('analysisCache の項目', () => {
+  it('版が合っていても、項目が足りない保存データ（版の食い違い）は、無かったものとして扱う', async () => {
+    const { kv } = await import('./idb');
+    const { ANALYSIS_VERSION } = await import('../cache/analysisCache');
+    const color = { L: 0.5, a: 0.1, b: 0.1, C: 0.14, H: 45, hex: '#aa5533' };
+    const raw = kv<unknown>('analysis', 't-shape');
+    const full = { color, palette: PALETTE, composition: COMP, tone: TONE, thumb: new Blob(['x']), version: ANALYSIS_VERSION };
+    // 配色だけの公開版（構図・質感が無い）、質感が無い、構図が無い、配色が空、数値が壊れている
+    await raw.set('palette-only', { color, palette: PALETTE, thumb: new Blob(['x']), version: ANALYSIS_VERSION });
+    await raw.set('no-tone', { ...full, tone: undefined });
+    await raw.set('no-comp', { ...full, composition: undefined });
+    await raw.set('empty-palette', { ...full, palette: [] });
+    await raw.set('nan', { ...full, tone: { ...TONE, brightness: Number.NaN } });
+    await raw.set('ok', full);
+    const cache = createAnalysisCache('t-shape');
+    const got = await cache.getMany(['palette-only', 'no-tone', 'no-comp', 'empty-palette', 'nan', 'ok']);
+    expect(got.map((x) => x !== undefined)).toEqual([false, false, false, false, false, true]);
+  });
+});
+
 describe('FavoritesStore', () => {
   it('切り替えが保存され、読み直しても残る', async () => {
     const a = new FavoritesStore('t-fav');
