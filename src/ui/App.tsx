@@ -3,7 +3,9 @@ import { FavoritesStore } from '../core/cache/favorites';
 import { snakeCells } from '../core/layout/snake';
 import { sortItems } from '../core/sort';
 import type { SortDirection, SortMode } from '../core/types';
+import { NO_FILTER, countWhen, matchesWhen, type WhenFilter } from '../core/when';
 import { createWebAdapter } from '../platform/web';
+import { FilterBar } from './FilterBar';
 import { NavBar } from './NavBar';
 import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
@@ -22,6 +24,7 @@ export function App() {
   const [tileSize, setTileSize] = useState(128);
   const [cols, setCols] = useState(6);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [when, setWhen] = useState<WhenFilter>(NO_FILTER);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   const { folder, items, phase, progress, restore, error, notice, pick, reopen, close: closeFolder, refresh } = useGallery(adapter, recursive);
@@ -51,16 +54,17 @@ export function App() {
 
   const sorted = useMemo(() => sortItems(items, mode, direction), [items, mode, direction]);
   const displayed = useMemo(
-    () => (onlyFavorites ? sorted.filter((x) => isFavorite(x, filterFavorites)) : sorted),
-    [sorted, onlyFavorites, filterFavorites],
+    () => sorted.filter((x) => matchesWhen(x, when) && (!onlyFavorites || isFavorite(x, filterFavorites))),
+    [sorted, when, onlyFavorites, filterFavorites],
   );
+  const whenCounts = useMemo(() => countWhen(items, when), [items, when]);
   // 色順は蛇行配置、それ以外は通常の行優先
   const cells = useMemo(() => (mode === 'color' ? snakeCells(displayed, cols) : displayed), [displayed, cols, mode]);
 
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites]);
+  }, [mode, direction, onlyFavorites, when]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -103,6 +107,7 @@ export function App() {
         onRefresh={refresh}
         refreshReopensPicker={!adapter.capabilities.persistent}
       />
+      {folder && <FilterBar filter={when} onChange={setWhen} counts={whenCounts} />}
       {folder ? (
         <div className="main">
           <div className="scroller" ref={scrollerRef}>
@@ -117,7 +122,9 @@ export function App() {
             />
             {phase !== 'idle' && phase !== 'listing' && displayed.length === 0 && (
               <p className="empty">
-                {onlyFavorites
+                {when.season !== null || when.time !== null
+                  ? 'この季節・時間帯の写真はありません。撮影日時（EXIF）が無い画像は、絞り込みの対象外です。'
+                  : onlyFavorites
                   ? 'お気に入りはまだありません。画像を開いて「お気に入りに追加」を押すと、ここに集まります。'
                   : error ?? '画像（jpg / png / webp / gif）が見つかりませんでした。'}
               </p>
