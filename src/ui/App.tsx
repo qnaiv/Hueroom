@@ -4,8 +4,10 @@ import { compositionTags, spaceThresholds, COMPOSITION_TAGS, type CompositionTag
 import { snakeCells } from '../core/layout/snake';
 import { sortItems } from '../core/sort';
 import type { SortDirection, SortMode } from '../core/types';
+import { NO_FILTER, countWhen, matchesWhen, type WhenFilter } from '../core/when';
 import { createWebAdapter } from '../platform/web';
 import { CompositionBar } from './CompositionBar';
+import { FilterBar } from './FilterBar';
 import { NavBar } from './NavBar';
 import { Lightbox } from './Lightbox';
 import { Toolbar } from './Toolbar';
@@ -25,6 +27,7 @@ export function App() {
   const [cols, setCols] = useState(6);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [compTag, setCompTag] = useState<CompositionTag | null>(null);
+  const [when, setWhen] = useState<WhenFilter>(NO_FILTER);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   const { folder, items, phase, progress, restore, error, notice, pick, reopen, close: closeFolder, refresh } = useGallery(adapter, recursive);
@@ -67,18 +70,20 @@ export function App() {
     () =>
       sorted.filter(
         (x) =>
+          matchesWhen(x, when) &&
           (compTag === null || (x.analysis !== undefined && compositionTags(x.analysis.composition, spaceTh).includes(compTag))) &&
           (!onlyFavorites || isFavorite(x, filterFavorites)),
       ),
-    [sorted, compTag, spaceTh, onlyFavorites, filterFavorites],
+    [sorted, when, compTag, spaceTh, onlyFavorites, filterFavorites],
   );
+  const whenCounts = useMemo(() => countWhen(items, when), [items, when]);
   // 色順は蛇行配置、それ以外は通常の行優先
   const cells = useMemo(() => (mode === 'color' ? snakeCells(displayed, cols) : displayed), [displayed, cols, mode]);
 
   // 並び順・絞り込みを変えたら先頭に戻る
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: 0 });
-  }, [mode, direction, onlyFavorites, compTag]);
+  }, [mode, direction, onlyFavorites, when, compTag]);
 
   const openIndex = openKey === null ? -1 : displayed.findIndex((x) => x.key === openKey);
   const openItem = openIndex >= 0 ? displayed[openIndex] : undefined;
@@ -121,6 +126,7 @@ export function App() {
         onRefresh={refresh}
         refreshReopensPicker={!adapter.capabilities.persistent}
       />
+      {folder && <FilterBar filter={when} onChange={setWhen} counts={whenCounts} />}
       {folder && <CompositionBar tag={compTag} onChange={setCompTag} counts={compCounts} />}
       {folder ? (
         <div className="main">
@@ -136,7 +142,9 @@ export function App() {
             />
             {phase !== 'idle' && phase !== 'listing' && displayed.length === 0 && (
               <p className="empty">
-                {compTag !== null
+                {when.season !== null || when.time !== null
+                  ? 'この季節・時間帯の写真はありません。撮影日時（EXIF）が無い画像は、絞り込みの対象外です。'
+                  : compTag !== null
                   ? 'この構図の写真は見つかりません。解析が終わっていない画像は、絞り込みの対象外です。'
                   : onlyFavorites
                   ? 'お気に入りはまだありません。画像を開いて「お気に入りに追加」を押すと、ここに集まります。'

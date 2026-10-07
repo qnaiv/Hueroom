@@ -186,6 +186,26 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .welcome-swatch { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; width: 100%; }
 .welcome-swatch i { aspect-ratio: 1; border-radius: 4px; }
 
+/* 季節・時間帯の絞り込み */
+.filterbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px;
+  padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.filter-label { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--fg); font-size: 13px; cursor: pointer;
+}
+.chip .num { font-size: 11px; color: var(--muted); }
+.chip:hover:not(:disabled) { background: var(--surface-2); }
+.chip[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.chip[aria-pressed='true'] .num { color: inherit; opacity: 0.85; }
+.chip:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 640px) {
+  .filterbar { padding: 6px 12px; }
+
 /* 構図の絞り込み */
 .compbar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
